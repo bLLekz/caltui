@@ -1,0 +1,11 @@
+[package]
+name = "caltui"
+version = "0.0.1"
+edition = "2024"
+
+[dependencies]
+color-eyre = "0.6.5"
+crossterm = "0.29.0"
+ratatui = "0.30.0"
+strum = { version = "0.28.0", features = ["derive"] }
+tui-big-text = "0.8.4"
