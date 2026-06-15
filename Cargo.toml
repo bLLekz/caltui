@@ -2,6 +2,7 @@
 name = "caltui"
 version = "0.1.0"
 edition = "2024"
+description = "Simple calc from terminal"
 readme = "README.md"
 repository = "https://github.com/bLLekz/caltui"
 license = "MIT"
