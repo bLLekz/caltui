@@ -1,3 +1,4 @@
+use ratatui::layout::Rect;
 use strum::Display;
 
 /// App state

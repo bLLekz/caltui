@@ -1,6 +1,6 @@
 use color_eyre::eyre::{Ok, Result};
-use crossterm::event::{self, Event, KeyCode};
-use ratatui::DefaultTerminal;
+use crossterm::event::{self, Event, KeyCode, MouseButton, MouseEvent, MouseEventKind};
+use ratatui::{DefaultTerminal, layout::Rect};
 
 use crate::{
     calc::Calc,
@@ -53,11 +53,20 @@ impl CalcApp {
         match event::read()? {
             Event::Key(key) => match key.code {
                 KeyCode::Char('Q') => self.quit(),
+                KeyCode::Char('C') => self.reset(),
+                KeyCode::Char('c') => self.clear_input(),
                 KeyCode::Char(c) => self.typing_action(c),
                 KeyCode::Backspace => self.backspace_action(),
                 KeyCode::Delete => self.delete_action(),
                 KeyCode::Enter => self.do_calc(),
                 KeyCode::Esc => self.reset(),
+                _ => (),
+            },
+            Event::Mouse(mouse) => match mouse.kind {
+                MouseEventKind::Up(MouseButton::Left) => {
+                    // self.text_input = "1".into();
+                    // self.input_cursor_position += 1;
+                },
                 _ => (),
             },
             _ => (),
@@ -199,6 +208,10 @@ impl CalcApp {
         self.input_cursor_position = 1;
     }
 
+    fn clear_input(&mut self) {
+        self.default_text();
+    }
+    
     fn reset(&mut self) {
         self.default_text();
         self.first_part = "".into();

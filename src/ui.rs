@@ -1,5 +1,10 @@
 use ratatui::{
-    Frame, buffer::Buffer, layout::{Alignment, Constraint, Layout, Rect}, style::{Color, Style, Stylize}, text::Line, widgets::{Block, BorderType, Paragraph, Widget, Wrap}
+    Frame,
+    buffer::Buffer,
+    layout::{Alignment, Constraint, Direction::{self, Vertical}, Layout, Rect},
+    style::{Color, Style, Stylize},
+    text::Line,
+    widgets::{Block, BorderType, Borders, Paragraph, Widget, Wrap},
 };
 use tui_big_text::{BigText, PixelSize};
 
@@ -48,11 +53,9 @@ fn render_display(buf: &mut Buffer, area: Rect, app: &mut CalcApp) {
         .style(Style::new().white())
         .alignment(Alignment::Right)
         .block(block)
-        .lines(vec![
-            total_text,
-            text_input,
-        ])
-        .build().render(area, buf);
+        .lines(vec![total_text, text_input])
+        .build()
+        .render(area, buf);
 }
 
 /// Render buttons zone
@@ -61,12 +64,58 @@ fn render_buttons(buf: &mut Buffer, area: Rect) {
         .border_type(BorderType::Rounded)
         .border_style(Style::new().white())
         .render(area, buf);
-    
+
+    let rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Fill(1); 6])
+        .margin(1)
+        .split(area);
+
+    let button_labels = vec![
+        vec!["%", "CE", "C", "Del"],
+        vec!["1/x", "x2", "2Vx", "/"],
+        vec!["7", "8", "9", "*"],
+        vec!["4", "5", "6", "-"],
+        vec!["1", "2", "3", "+"],
+        vec!["+/-", "0", ".", "="],
+    ];
+
+    let block = Block::bordered()
+        .border_type(BorderType::Rounded)
+        .border_style(Style::new().white());
+
+    for (i, row) in rows.iter().enumerate() {
+        let cols = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Fill(1); 4])
+            .spacing(1)
+            .split(*row);
+
+        for (j, cell) in cols.iter().enumerate() {
+            let label = button_labels[i][j];
+            let line = Line::styled(label, Color::White);
+
+            block.clone().render(*cell, buf);
+            
+            let inner_layout = Layout::vertical([Constraint::Fill(1)]).margin(1);
+            let [inner_area] = cell.layout(&inner_layout);
+            
+            let inner_area = inner_area.centered(Constraint::Length(25), Constraint::Length(4));
+            
+            BigText::builder()
+                .pixel_size(PixelSize::Sextant)
+                .style(Style::new().white())
+                .centered()
+                .lines([line])
+                .build()
+                .render(inner_area, buf);
+        }
+    }
 }
 
 /// Render help zone
 fn render_help(buf: &mut Buffer, area: Rect) {
-    Paragraph::new("esc - clear, Q - quit")
+    Paragraph::new("c - clear input, esc/C - clear all, Q - quit")
         .alignment(Alignment::Right)
         .fg(Color::Rgb(150, 150, 150))
         .wrap(Wrap { trim: true })
