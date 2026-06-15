@@ -65,9 +65,7 @@ impl CalcApp {
                 _ => (),
             },
             Event::Mouse(mouse) => match mouse.kind {
-                MouseEventKind::Up(MouseButton::Left) => {
-                    self.handle_mouse(mouse.column, mouse.row);
-                }
+                MouseEventKind::Up(MouseButton::Left) => self.handle_mouse(mouse.column, mouse.row),
                 _ => (),
             },
             _ => (),
@@ -97,7 +95,7 @@ impl CalcApp {
 
         if char_type == UserInput::Symbol {
             if self.first_part.len() != 0 && self.text_input.len() == 0 {
-                self.text_input = "".into();
+                self.text_input = String::new();
                 self.input_cursor_position = 0;
             }
 
@@ -127,29 +125,24 @@ impl CalcApp {
                 _ => Operation::None,
             };
 
-            if self.first_part.len() == 0 && self.text_input.len() > 0 {
+            if self.first_part.len() == 0 && self.text_input.len() > 0 
+            {
                 self.first_part = self.text_input.clone();
-                let first_part = self.first_part.clone();
-                let operation = self.operation.to_string();
-                self.total_text = format!("{first_part} {operation}");
+                self.total_text = format!("{} {}", self.first_part.clone(), self.operation.to_string());
                 self.default_text();
             }
-
+            
             if self.first_part.len() > 0 && self.text_input.len() > 0 && self.second_part.len() == 0
             {
-                let first_part = self.first_part.clone();
-                let operation = self.operation.to_string();
-                self.total_text = format!("{first_part} {operation}");
+                self.total_text = format!("{} {}", self.first_part.clone(), self.operation.to_string());
                 self.default_text();
             }
 
             if self.first_part.len() > 0 && self.second_part.len() > 0 && self.text_input.len() > 0
             {
                 self.first_part = self.text_input.clone();
-                self.second_part = "".into();
-                let first_part = self.first_part.clone();
-                let operation = self.operation.to_string();
-                self.total_text = format!("{first_part} {operation}");
+                self.second_part = String::new();
+                self.total_text = format!("{} {}", self.first_part.clone(), self.operation.to_string());
                 self.default_text();
             }
         }
@@ -185,9 +178,7 @@ impl CalcApp {
     }
 
     fn do_calc(&mut self) {
-        if self.text_input.len() != 0
-            && self.text_input != "Cannot divide by zero!"
-            && self.first_part.len() != 0
+        if self.text_input.len() != 0 && self.text_input != "Cannot divide by zero!" && self.first_part.len() != 0
         {
             if self.second_part.len() == 0 {
                 self.second_part = self.text_input.clone();
@@ -195,8 +186,7 @@ impl CalcApp {
                 self.first_part = self.text_input.clone();
             }
 
-            self.total_text = format!(
-                "{} {} {} =",
+            self.total_text = format!("{} {} {} =",
                 self.first_part.clone(),
                 self.operation.to_string(),
                 self.second_part.clone()
@@ -290,7 +280,7 @@ impl CalcApp {
     }
 
     fn default_text(&mut self) {
-        self.text_input = "0".into();
+        self.text_input = String::from("0");
         self.input_cursor_position = 1;
     }
 
@@ -300,10 +290,10 @@ impl CalcApp {
 
     fn reset(&mut self) {
         self.default_text();
-        self.first_part = "".into();
+        self.first_part = String::new();
         self.operation = Operation::None;
-        self.second_part = "".into();
-        self.total_text = "".into();
+        self.second_part = String::new();
+        self.total_text = String::new();
     }
 
     fn quit(&mut self) {

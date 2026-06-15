@@ -1,4 +1,14 @@
 use strum::Display;
+use clap::Parser;
+
+/// Launch arguments
+#[derive(Parser, Debug)]
+#[command(author, version, about)]
+pub struct Args {
+    /// Run without altscreen
+    #[arg(short, long)]
+    pub inline: bool,
+}
 
 /// App state
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
