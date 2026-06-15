@@ -18,6 +18,30 @@ impl Calc {
         }
     }
 
+    pub fn calc_procent(num: String) -> String {
+        let num: f64 = num.parse().unwrap();
+        let result = (num * 1.0) / 100.0;
+        Self::get_string_result(result)
+    }
+
+    pub fn calc_one_divide_x(num: String) -> String {
+        let num: f64 = num.parse().unwrap();
+        let result = 1.0 / (num);
+        Self::get_string_result(result)
+    }
+
+    pub fn calc_sqr(num: String) -> String {
+        let num: f64 = num.parse().unwrap();
+        let result =  num.powf(2.0);
+        Self::get_string_result(result)
+    }
+
+    pub fn calc_sqrt(num: String) -> String {
+        let num: f64 = num.parse().unwrap();
+        let result =  num.sqrt();
+        Self::get_string_result(result)
+    }
+
     fn addition(first_part: f64, second_part: f64) -> String {
         let result = first_part + second_part;
         Self::get_string_result(result)

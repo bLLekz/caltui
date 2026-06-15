@@ -1,5 +1,5 @@
 use color_eyre::eyre::{Ok, Result};
-use crossterm::event::{self, Event, KeyCode, MouseButton, MouseEvent, MouseEventKind};
+use crossterm::event::{self, Event, KeyCode, MouseButton, MouseEventKind};
 use ratatui::{DefaultTerminal, layout::Rect};
 
 use crate::{
@@ -21,6 +21,7 @@ pub struct CalcApp {
     pub first_part: String,
     pub second_part: String,
     pub total_text: String,
+    pub button_areas: Vec<(Rect, &'static str)>,
 }
 
 impl CalcApp {
@@ -33,6 +34,7 @@ impl CalcApp {
             first_part: String::new(),
             second_part: String::new(),
             total_text: String::new(),
+            button_areas: vec![],
         }
     }
 
@@ -64,9 +66,8 @@ impl CalcApp {
             },
             Event::Mouse(mouse) => match mouse.kind {
                 MouseEventKind::Up(MouseButton::Left) => {
-                    // self.text_input = "1".into();
-                    // self.input_cursor_position += 1;
-                },
+                    self.handle_mouse(mouse.column, mouse.row);
+                }
                 _ => (),
             },
             _ => (),
@@ -105,7 +106,11 @@ impl CalcApp {
         }
 
         if char_type == UserInput::Operation {
-            if self.first_part.len() > 0 && (self.text_input.len() > 0 && self.text_input != 0.to_string()) && self.second_part.len() == 0 && self.operation != Operation::None {
+            if self.first_part.len() > 0
+                && (self.text_input.len() > 0 && self.text_input != 0.to_string())
+                && self.second_part.len() == 0
+                && self.operation != Operation::None
+            {
                 self.first_part = Calc::calculate(
                     self.first_part.clone(),
                     self.text_input.clone(),
@@ -190,16 +195,97 @@ impl CalcApp {
                 self.first_part = self.text_input.clone();
             }
 
-            let first_part = self.first_part.clone();
-            let operation = self.operation.to_string();
-            let second_part = self.second_part.clone();
-            self.total_text = format!("{first_part} {operation} {second_part} =");
+            self.total_text = format!(
+                "{} {} {} =",
+                self.first_part.clone(),
+                self.operation.to_string(),
+                self.second_part.clone()
+            );
+
             self.text_input = Calc::calculate(
                 self.first_part.clone(),
                 self.second_part.clone(),
                 self.operation.clone(),
             );
+
             self.input_cursor_position = self.text_input.clone().len().try_into().unwrap();
+        }
+    }
+
+    /// Calc 1% of x
+    fn calc_procent(&mut self) {
+        if self.text_input != "0" && self.text_input.len() > 0 {
+            self.total_text = format!("1 % of {}", self.text_input);
+            self.text_input = Calc::calc_procent(self.text_input.clone());
+        }
+    }
+
+    /// Calc 1/x
+    fn calc_one_divide_x(&mut self) {
+        if self.text_input != "0" && self.text_input.len() > 0 {
+            self.total_text = format!("1/({})", self.text_input);
+            self.text_input = Calc::calc_one_divide_x(self.text_input.clone());
+        }
+    }
+
+    /// Calc x²
+    fn calc_x_sqr(&mut self) {
+        if self.text_input != "0" && self.text_input.len() > 0 {
+            self.total_text = format!("sqr({})", self.text_input);
+            self.text_input = Calc::calc_sqr(self.text_input.clone());
+        }
+    }
+
+    /// Calc ²√x
+    fn calc_sqrt(&mut self) {
+        if self.text_input != "0" && self.text_input.len() > 0 {
+            self.total_text = format!("sqrt({})", self.text_input);
+            self.text_input = Calc::calc_sqrt(self.text_input.clone());
+        }
+    }
+
+    fn switch_plus_minus(&mut self) {
+        if self.text_input.starts_with('-') {
+            self.text_input = self.text_input.trim_start_matches('-').to_string();
+        } else if self.text_input != "0" {
+            self.text_input = format!("-{}", self.text_input);
+        }
+    }
+
+    fn handle_mouse(&mut self, column: u16, row: u16) {
+        for (rect, label) in &self.button_areas {
+            if column >= rect.x
+                && column < rect.x + rect.width
+                && row >= rect.y
+                && row < rect.y + rect.height
+            {
+                self.on_button_press(label);
+                break;
+            }
+        }
+    }
+
+    fn on_button_press(&mut self, label: &str) {
+        match label {
+            "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "." => {
+                for ch in label.chars() {
+                    self.typing_action(ch);
+                }
+            }
+            "+" | "-" | "*" | "/" => {
+                let ch = label.chars().next().unwrap();
+                self.typing_action(ch);
+            }
+            "=" => self.do_calc(),
+            "C" => self.reset(),
+            "CE" => self.clear_input(),
+            "Del" => self.backspace_action(),
+            "+/-" => self.switch_plus_minus(),
+            "%" => self.calc_procent(),
+            "1/x" => self.calc_one_divide_x(),
+            "sqr" => self.calc_x_sqr(),
+            "sqrt" => self.calc_sqrt(),
+            _ => {}
         }
     }
 
@@ -211,7 +297,7 @@ impl CalcApp {
     fn clear_input(&mut self) {
         self.default_text();
     }
-    
+
     fn reset(&mut self) {
         self.default_text();
         self.first_part = "".into();

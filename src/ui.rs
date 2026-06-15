@@ -1,10 +1,14 @@
 use ratatui::{
     Frame,
     buffer::Buffer,
-    layout::{Alignment, Constraint, Direction::{self, Vertical}, Layout, Rect},
+    layout::{
+        Alignment, Constraint,
+        Direction::{self},
+        Layout, Rect,
+    },
     style::{Color, Style, Stylize},
     text::Line,
-    widgets::{Block, BorderType, Borders, Paragraph, Widget, Wrap},
+    widgets::{Block, BorderType, Paragraph, Widget, Wrap},
 };
 use tui_big_text::{BigText, PixelSize};
 
@@ -35,7 +39,7 @@ pub fn render_ui(app: &mut CalcApp, frame: &mut Frame) {
     let [display, buttons, help] = content.layout(&layout);
 
     render_display(frame.buffer_mut(), display, app);
-    render_buttons(frame.buffer_mut(), buttons);
+    render_buttons(frame.buffer_mut(), buttons, app);
     render_help(frame.buffer_mut(), help);
 }
 
@@ -59,7 +63,9 @@ fn render_display(buf: &mut Buffer, area: Rect, app: &mut CalcApp) {
 }
 
 /// Render buttons zone
-fn render_buttons(buf: &mut Buffer, area: Rect) {
+fn render_buttons(buf: &mut Buffer, area: Rect, app: &mut CalcApp) {
+    app.button_areas.clear();
+
     Block::bordered()
         .border_type(BorderType::Rounded)
         .border_style(Style::new().white())
@@ -73,7 +79,7 @@ fn render_buttons(buf: &mut Buffer, area: Rect) {
 
     let button_labels = vec![
         vec!["%", "CE", "C", "Del"],
-        vec!["1/x", "x2", "2Vx", "/"],
+        vec!["1/x", "sqr", "sqrt", "/"],
         vec!["7", "8", "9", "*"],
         vec!["4", "5", "6", "-"],
         vec!["1", "2", "3", "+"],
@@ -84,6 +90,7 @@ fn render_buttons(buf: &mut Buffer, area: Rect) {
         .border_type(BorderType::Rounded)
         .border_style(Style::new().white());
 
+
     for (i, row) in rows.iter().enumerate() {
         let cols = Layout::default()
             .direction(Direction::Horizontal)
@@ -93,15 +100,18 @@ fn render_buttons(buf: &mut Buffer, area: Rect) {
 
         for (j, cell) in cols.iter().enumerate() {
             let label = button_labels[i][j];
-            let line = Line::styled(label, Color::White);
 
             block.clone().render(*cell, buf);
-            
+
             let inner_layout = Layout::vertical([Constraint::Fill(1)]).margin(1);
             let [inner_area] = cell.layout(&inner_layout);
             
+            app.button_areas.push((inner_area, label));
+            
             let inner_area = inner_area.centered(Constraint::Length(25), Constraint::Length(4));
             
+            let line = Line::styled(label, Color::White);
+
             BigText::builder()
                 .pixel_size(PixelSize::Sextant)
                 .style(Style::new().white())
