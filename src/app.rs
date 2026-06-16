@@ -1,5 +1,5 @@
 use color_eyre::eyre::{Ok, Result};
-use crossterm::event::{self, Event, KeyCode, MouseButton, MouseEventKind};
+use crossterm::event::{self, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind};
 use ratatui::{DefaultTerminal, layout::Rect};
 
 use crate::{
@@ -53,15 +53,18 @@ impl CalcApp {
     // Keybinds
     fn handle_events(&mut self) -> Result<()> {
         match event::read()? {
-            Event::Key(key) => match key.code {
-                KeyCode::Char('Q') => self.quit(),
-                KeyCode::Char('C') => self.reset(),
-                KeyCode::Char('c') => self.clear_input(),
-                KeyCode::Char(c) => self.typing_action(c),
-                KeyCode::Backspace => self.backspace_action(),
-                KeyCode::Delete => self.delete_action(),
-                KeyCode::Enter => self.do_calc(),
-                KeyCode::Esc => self.reset(),
+            Event::Key(key) => match key.kind {
+                KeyEventKind::Release => match key.code {
+                    KeyCode::Char('Q') => self.quit(),
+                    KeyCode::Char('C') => self.reset(),
+                    KeyCode::Char('c') => self.clear_input(),
+                    KeyCode::Char(c) => self.typing_action(c),
+                    KeyCode::Backspace => self.backspace_action(),
+                    KeyCode::Delete => self.delete_action(),
+                    KeyCode::Enter => self.do_calc(),
+                    KeyCode::Esc => self.reset(),
+                    _ => (),
+                },
                 _ => (),
             },
             Event::Mouse(mouse) => match mouse.kind {
@@ -125,16 +128,17 @@ impl CalcApp {
                 _ => Operation::None,
             };
 
-            if self.first_part.len() == 0 && self.text_input.len() > 0 
-            {
+            if self.first_part.len() == 0 && self.text_input.len() > 0 {
                 self.first_part = self.text_input.clone();
-                self.total_text = format!("{} {}", self.first_part.clone(), self.operation.to_string());
+                self.total_text =
+                    format!("{} {}", self.first_part.clone(), self.operation.to_string());
                 self.default_text();
             }
-            
+
             if self.first_part.len() > 0 && self.text_input.len() > 0 && self.second_part.len() == 0
             {
-                self.total_text = format!("{} {}", self.first_part.clone(), self.operation.to_string());
+                self.total_text =
+                    format!("{} {}", self.first_part.clone(), self.operation.to_string());
                 self.default_text();
             }
 
@@ -142,7 +146,8 @@ impl CalcApp {
             {
                 self.first_part = self.text_input.clone();
                 self.second_part = String::new();
-                self.total_text = format!("{} {}", self.first_part.clone(), self.operation.to_string());
+                self.total_text =
+                    format!("{} {}", self.first_part.clone(), self.operation.to_string());
                 self.default_text();
             }
         }
@@ -178,7 +183,9 @@ impl CalcApp {
     }
 
     fn do_calc(&mut self) {
-        if self.text_input.len() != 0 && self.text_input != "Cannot divide by zero!" && self.first_part.len() != 0
+        if self.text_input.len() != 0
+            && self.text_input != "Cannot divide by zero!"
+            && self.first_part.len() != 0
         {
             if self.second_part.len() == 0 {
                 self.second_part = self.text_input.clone();
@@ -186,7 +193,8 @@ impl CalcApp {
                 self.first_part = self.text_input.clone();
             }
 
-            self.total_text = format!("{} {} {} =",
+            self.total_text = format!(
+                "{} {} {} =",
                 self.first_part.clone(),
                 self.operation.to_string(),
                 self.second_part.clone()
