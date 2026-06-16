@@ -2,6 +2,10 @@
 
 Simple calc written on rust
 
+## Requirements
+
+* Installed any Nerd font
+
 ## Usage
 
 ```cmd
