@@ -1,11 +1,10 @@
 [package]
 name = "caltui"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Simple calc from terminal"
 readme = "README.md"
 repository = "https://github.com/bLLekz/caltui"
-license = "MIT"
 license-file = "LICENSE"
 categories = ["command-line-utilities"]
 
