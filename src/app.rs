@@ -54,7 +54,7 @@ impl CalcApp {
     fn handle_events(&mut self) -> Result<()> {
         match event::read()? {
             Event::Key(key) => match key.kind {
-                KeyEventKind::Release => match key.code {
+                KeyEventKind::Press => match key.code {
                     KeyCode::Char('Q') => self.quit(),
                     KeyCode::Char('C') => self.reset(),
                     KeyCode::Char('c') => self.clear_input(),
