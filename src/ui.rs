@@ -7,27 +7,65 @@ use ratatui::{
         Layout, Rect,
     },
     style::{Color, Style, Stylize},
-    text::Line,
+    text::{Line, Text},
     widgets::{Block, BorderType, Paragraph, Widget, Wrap},
 };
 use tui_widgets::big_text::{BigText, PixelSize};
 
 use crate::app::CalcApp;
 
-/// Render App UI
+pub const MIN_SCREEN_WIDTH: u16 = 80;
+pub const MIN_SCREEN_HEIGHT: u16 = 56;
+
+pub const BUTTON_LABELS: &[&[&str]] = &[
+    &["%", "CE", "C", "Del"],
+    &["1/x", "sqr", "sqrt", "/"],
+    &["7", "8", "9", "*"],
+    &["4", "5", "6", "-"],
+    &["1", "2", "3", "+"],
+    &["+/-", "0", ".", "="],
+];
+
+/// Render UI
 pub fn render_ui(app: &mut CalcApp, frame: &mut Frame) {
+    if frame.area().width < MIN_SCREEN_WIDTH || frame.area().height < MIN_SCREEN_HEIGHT {
+        render_wrong_size_message(frame);
+    } else {
+        render_app_ui(frame, app);
+    }
+}
+
+/// Render message with message about small app size
+fn render_wrong_size_message(frame: &mut Frame) {
+    Paragraph::new(Text::from(vec![
+        "".into(),
+        "Terminal size too small!".into(),
+        format!(
+            "Current size: {}x{}",
+            frame.area().width,
+            frame.area().height
+        )
+        .into(),
+        format!(
+            "Minimum required: {}x{}",
+            MIN_SCREEN_WIDTH, MIN_SCREEN_HEIGHT
+        )
+        .into(),
+    ]))
+    .alignment(Alignment::Center)
+    .block(Block::bordered().title("Small size"))
+    .render(frame.area(), frame.buffer_mut());
+}
+
+/// Render App UI
+fn render_app_ui(frame: &mut Frame, app: &mut CalcApp) {
     let layout = Layout::horizontal([Constraint::Length(100)]);
     let [content] = frame.area().layout(&layout);
 
-    let block = Block::bordered()
+    Block::bordered()
         .border_type(BorderType::Rounded)
         .title("calc")
-        .border_style(Style::new().cyan());
-
-    Paragraph::new("display")
-        .alignment(Alignment::Right)
-        .fg(Color::Rgb(150, 150, 150))
-        .block(block)
+        .border_style(Style::new().cyan())
         .render(content, frame.buffer_mut());
 
     let layout = Layout::vertical([
@@ -77,19 +115,9 @@ fn render_buttons(buf: &mut Buffer, area: Rect, app: &mut CalcApp) {
         .margin(1)
         .split(area);
 
-    let button_labels = vec![
-        vec!["%", "CE", "C", "Del"],
-        vec!["1/x", "sqr", "sqrt", "/"],
-        vec!["7", "8", "9", "*"],
-        vec!["4", "5", "6", "-"],
-        vec!["1", "2", "3", "+"],
-        vec!["+/-", "0", ".", "="],
-    ];
-
     let block = Block::bordered()
         .border_type(BorderType::Rounded)
         .border_style(Style::new().white());
-
 
     for (i, row) in rows.iter().enumerate() {
         let cols = Layout::default()
@@ -99,17 +127,17 @@ fn render_buttons(buf: &mut Buffer, area: Rect, app: &mut CalcApp) {
             .split(*row);
 
         for (j, cell) in cols.iter().enumerate() {
-            let label = button_labels[i][j];
+            let label = BUTTON_LABELS[i][j];
 
             block.clone().render(*cell, buf);
 
             let inner_layout = Layout::vertical([Constraint::Fill(1)]).margin(1);
             let [inner_area] = cell.layout(&inner_layout);
-            
+
             app.button_areas.push((inner_area, label));
-            
+
             let inner_area = inner_area.centered(Constraint::Length(25), Constraint::Length(4));
-            
+
             let line = Line::styled(label, Color::White);
 
             BigText::builder()
