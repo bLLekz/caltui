@@ -1,10 +1,6 @@
 # Calc in terminal
 
-Simple calc written on rust
-
-## Requirements
-
-* Installed any Nerd font
+Simple calc tui written on rust
 
 ## Usage
 
@@ -19,8 +15,3 @@ caltui -i
 # or 
 caltui --inline
 ```
-
-Built With:
-
-* [Ratatui](https://ratatui.rs/)
-* Crossterm
