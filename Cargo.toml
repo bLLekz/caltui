@@ -12,6 +12,6 @@ categories = ["command-line-utilities"]
 color-eyre = "0.6.5"
 crossterm = "0.29.0"
 ratatui = "0.30.0"
+tui-widgets = "0.7.10"
 clap = { version = "4.6.1", features = ["derive"] }
 strum = { version = "0.28.0", features = ["derive"] }
-tui-big-text = "0.8.4"
