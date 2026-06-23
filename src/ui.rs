@@ -10,7 +10,7 @@ use ratatui::{
     text::Line,
     widgets::{Block, BorderType, Paragraph, Widget, Wrap},
 };
-use tui_big_text::{BigText, PixelSize};
+use tui_widgets::big_text::{BigText, PixelSize};
 
 use crate::app::CalcApp;
 
