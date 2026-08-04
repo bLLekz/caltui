@@ -16,23 +16,36 @@ fn main() -> Result<()> {
 
     let args = Args::parse();
 
-    let mut terminal = if args.inline {
+    let mut viewport = Viewport::Inline(27);
+
+    if args.big {
+        viewport = Viewport::Inline(67)
+    }
+
+    let mut terminal = if args.altscreen {
+        ratatui::init()
+    } else {
         let options = TerminalOptions {
-            viewport: Viewport::Inline(60),
+            viewport: viewport,
         };
         ratatui::try_init_with_options(options)?
-    } else {
-        ratatui::init()
     };
 
     enable_raw_mode()?;
     crossterm::execute!(terminal.backend_mut(), EnableMouseCapture)?;
 
-    let app = CalcApp::new();
+    let mut app = CalcApp::new();
+    if args.big {
+        app.size = common::AppSize::Big;
+    }
+    if args.altscreen {
+        app.altscreen = true;
+    }
 
     let result = app.run(&mut terminal);
 
     // Cleanup
+    terminal.clear()?; 
     disable_raw_mode()?;
     crossterm::execute!(terminal.backend_mut(), DisableMouseCapture)?;
     ratatui::restore();

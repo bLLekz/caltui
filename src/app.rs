@@ -3,18 +3,17 @@ use crossterm::event::{self, Event, KeyCode, KeyEventKind, MouseButton, MouseEve
 use ratatui::{DefaultTerminal, layout::Rect};
 
 use crate::{
-    calc::Calc,
-    common::{
-        AppState, Operation,
-        UserInput::{self},
-    },
-    ui::render_ui,
+    calc::Calc, common::{
+        AppSize, AppState, Operation, UserInput::{self},
+    }, ui::render_ui,
 };
 
 /// Main app
 #[derive(Default, Clone)]
 pub struct CalcApp {
     pub state: AppState,
+    pub size: AppSize,
+    pub altscreen: bool,
     pub text_input: String,
     pub input_cursor_position: i32,
     pub operation: Operation,
@@ -28,6 +27,8 @@ impl CalcApp {
     pub fn new() -> Self {
         Self {
             state: AppState::default(),
+            size: AppSize::default(),
+            altscreen: false,
             text_input: String::from("0"),
             input_cursor_position: 1,
             operation: Operation::None,

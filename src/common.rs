@@ -5,9 +5,20 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
 pub struct Args {
-    /// Run without altscreen
+    /// Run in altscreen
     #[arg(short, long)]
-    pub inline: bool,
+    pub altscreen: bool,
+    /// Run with big text
+    #[arg(short, long)]
+    pub big: bool,
+}
+
+// App size
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum AppSize {
+    #[default]
+    Default,
+    Big,
 }
 
 /// App state
