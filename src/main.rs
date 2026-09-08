@@ -25,9 +25,7 @@ fn main() -> Result<()> {
     let mut terminal = if args.altscreen {
         ratatui::init()
     } else {
-        let options = TerminalOptions {
-            viewport: viewport,
-        };
+        let options = TerminalOptions { viewport };
         ratatui::try_init_with_options(options)?
     };
 
@@ -48,7 +46,9 @@ fn main() -> Result<()> {
     disable_raw_mode()?;
     crossterm::execute!(terminal.backend_mut(), DisableMouseCapture)?;
     ratatui::restore();
-    terminal.clear()?; 
+    if !args.altscreen {
+        terminal.clear()?;
+    }
 
     result
 }
