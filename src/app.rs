@@ -60,27 +60,29 @@ impl CalcApp {
     // Keybinds
     fn handle_events(&mut self) -> Result<()> {
         match event::read()? {
-            Event::Key(key) => match key.kind {
-                KeyEventKind::Press => match key.code {
-                    KeyCode::Char('Q') => self.quit(),
-                    KeyCode::Char('C') => self.reset(),
-                    KeyCode::Char('c') => self.clear_input(),
-                    KeyCode::Char('y') => self.yank_result(),
-                    KeyCode::Char('p') => self.paste_result(),
-                    KeyCode::Char('?') => self.switch_help(),
-                    KeyCode::Char(c) => self.typing_action(c),
-                    KeyCode::Backspace => self.backspace_action(),
-                    KeyCode::Delete => self.delete_action(),
-                    KeyCode::Enter => self.do_calc(),
-                    KeyCode::Esc => self.reset(),
-                    _ => (),
-                },
-                _ => (),
-            },
-            Event::Mouse(mouse) => match mouse.kind {
-                MouseEventKind::Up(MouseButton::Left) => self.handle_mouse(mouse.column, mouse.row),
-                _ => (),
-            },
+            Event::Key(key) => {
+                if key.kind == KeyEventKind::Press {
+                    match key.code {
+                        KeyCode::Char('Q') => self.quit(),
+                        KeyCode::Char('C') => self.reset(),
+                        KeyCode::Char('c') => self.clear_input(),
+                        KeyCode::Char('y') => self.yank_result(),
+                        KeyCode::Char('p') => self.paste_result(),
+                        KeyCode::Char('?') => self.switch_help(),
+                        KeyCode::Char(c) => self.typing_action(c),
+                        KeyCode::Backspace => self.backspace_action(),
+                        KeyCode::Delete => self.delete_action(),
+                        KeyCode::Enter => self.do_calc(),
+                        KeyCode::Esc => self.reset(),
+                        _ => (),
+                    }
+                }
+            }
+            Event::Mouse(mouse) => {
+                if let MouseEventKind::Up(MouseButton::Left) = mouse.kind {
+                    self.handle_mouse(mouse.column, mouse.row)
+                }
+            }
             _ => (),
         };
         Ok(())
@@ -107,7 +109,7 @@ impl CalcApp {
         }
 
         if char_type == UserInput::Symbol {
-            if self.first_part.len() != 0 && self.text_input.len() == 0 {
+            if !self.first_part.is_empty() && self.text_input.is_empty() {
                 self.text_input = String::new();
                 self.input_cursor_position = 0;
             }
@@ -117,9 +119,9 @@ impl CalcApp {
         }
 
         if char_type == UserInput::Operation {
-            if self.first_part.len() > 0
-                && (self.text_input.len() > 0 && self.text_input != 0.to_string())
-                && self.second_part.len() == 0
+            if !self.first_part.is_empty()
+                && (!self.text_input.is_empty() && self.text_input != 0.to_string())
+                && self.second_part.is_empty()
                 && self.operation != Operation::None
             {
                 self.first_part = Calc::calculate(
@@ -138,26 +140,26 @@ impl CalcApp {
                 _ => Operation::None,
             };
 
-            if self.first_part.len() == 0 && self.text_input.len() > 0 {
+            if self.first_part.is_empty() && !self.text_input.is_empty() {
                 self.first_part = self.text_input.clone();
-                self.total_text =
-                    format!("{} {}", self.first_part.clone(), self.operation.to_string());
+                self.total_text = format!("{} {}", self.first_part.clone(), self.operation);
                 self.default_text();
             }
 
-            if self.first_part.len() > 0 && self.text_input.len() > 0 && self.second_part.len() == 0
+            if !self.first_part.is_empty()
+                && !self.text_input.is_empty()
+                && self.second_part.is_empty()
             {
-                self.total_text =
-                    format!("{} {}", self.first_part.clone(), self.operation.to_string());
+                self.total_text = format!("{} {}", self.first_part.clone(), self.operation);
                 self.default_text();
             }
 
-            if self.first_part.len() > 0 && self.second_part.len() > 0 && self.text_input.len() > 0
+            if !self.first_part.is_empty() & !self.second_part.is_empty()
+                && !self.text_input.is_empty()
             {
                 self.first_part = self.text_input.clone();
                 self.second_part = String::new();
-                self.total_text =
-                    format!("{} {}", self.first_part.clone(), self.operation.to_string());
+                self.total_text = format!("{} {}", self.first_part.clone(), self.operation);
                 self.default_text();
             }
         }
@@ -168,7 +170,7 @@ impl CalcApp {
             return;
         }
 
-        if self.text_input.len() > 0 && self.input_cursor_position > 0 {
+        if !self.text_input.is_empty() && self.input_cursor_position > 0 {
             self.input_cursor_position -= 1;
             self.text_input = self
                 .text_input
@@ -181,13 +183,13 @@ impl CalcApp {
             self.default_text();
         }
 
-        if self.text_input.len() == 0 && self.input_cursor_position == 0 {
+        if self.text_input.is_empty() && self.input_cursor_position == 0 {
             self.default_text();
         }
     }
     fn delete_action(&mut self) {
         if self.input_cursor_position >= 0
-            && self.text_input.len() > 0
+            && !self.text_input.is_empty()
             && self.input_cursor_position < self.text_input.len().try_into().unwrap()
         {}
     }
@@ -208,11 +210,11 @@ impl CalcApp {
     }
 
     fn do_calc(&mut self) {
-        if self.text_input.len() != 0
+        if !self.text_input.is_empty()
             && self.text_input != "Cannot divide by zero!"
-            && self.first_part.len() != 0
+            && !self.first_part.is_empty()
         {
-            if self.second_part.len() == 0 {
+            if self.second_part.is_empty() {
                 self.second_part = self.text_input.clone();
             } else {
                 self.first_part = self.text_input.clone();
@@ -221,7 +223,7 @@ impl CalcApp {
             self.total_text = format!(
                 "{} {} {} =",
                 self.first_part.clone(),
-                self.operation.to_string(),
+                self.operation,
                 self.second_part.clone()
             );
 
@@ -237,7 +239,7 @@ impl CalcApp {
 
     /// Calc 1% of x
     fn calc_procent(&mut self) {
-        if self.text_input != "0" && self.text_input.len() > 0 {
+        if self.text_input != "0" && !self.text_input.is_empty() {
             self.total_text = format!("1 % of {}", self.text_input);
             self.text_input = Calc::calc_procent(self.text_input.clone());
         }
@@ -245,7 +247,7 @@ impl CalcApp {
 
     /// Calc 1/x
     fn calc_one_divide_x(&mut self) {
-        if self.text_input != "0" && self.text_input.len() > 0 {
+        if self.text_input != "0" && !self.text_input.is_empty() {
             self.total_text = format!("1/({})", self.text_input);
             self.text_input = Calc::calc_one_divide_x(self.text_input.clone());
         }
@@ -253,7 +255,7 @@ impl CalcApp {
 
     /// Calc x²
     fn calc_x_sqr(&mut self) {
-        if self.text_input != "0" && self.text_input.len() > 0 {
+        if self.text_input != "0" && !self.text_input.is_empty() {
             self.total_text = format!("sqr({})", self.text_input);
             self.text_input = Calc::calc_sqr(self.text_input.clone());
         }
@@ -261,7 +263,7 @@ impl CalcApp {
 
     /// Calc ²√x
     fn calc_sqrt(&mut self) {
-        if self.text_input != "0" && self.text_input.len() > 0 {
+        if self.text_input != "0" && !self.text_input.is_empty() {
             self.total_text = format!("sqrt({})", self.text_input);
             self.text_input = Calc::calc_sqrt(self.text_input.clone());
         }
