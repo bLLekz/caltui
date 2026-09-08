@@ -25,6 +25,7 @@ pub struct CalcApp {
     pub second_part: String,
     pub total_text: String,
     pub button_areas: Vec<(Rect, &'static str)>,
+    pub show_help: bool,
 }
 
 impl CalcApp {
@@ -40,6 +41,7 @@ impl CalcApp {
             second_part: String::new(),
             total_text: String::new(),
             button_areas: vec![],
+            show_help: false,
         }
     }
 
@@ -65,6 +67,7 @@ impl CalcApp {
                     KeyCode::Char('c') => self.clear_input(),
                     KeyCode::Char('y') => self.yank_result(),
                     KeyCode::Char('p') => self.paste_result(),
+                    KeyCode::Char('?') => self.switch_help(),
                     KeyCode::Char(c) => self.typing_action(c),
                     KeyCode::Backspace => self.backspace_action(),
                     KeyCode::Delete => self.delete_action(),
@@ -306,6 +309,10 @@ impl CalcApp {
             "sqrt" => self.calc_sqrt(),
             _ => {}
         }
+    }
+
+    fn switch_help(&mut self) {
+        self.show_help = !self.show_help;
     }
 
     fn default_text(&mut self) {
