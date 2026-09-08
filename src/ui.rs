@@ -7,8 +7,8 @@ use ratatui::{
         Layout, Rect,
     },
     style::{Color, Style, Stylize},
-    text::{Line},
-    widgets::{Block, BorderType, Paragraph, Widget, Wrap},
+    text::{Line, Text},
+    widgets::{Block, BorderType, Padding, Paragraph, Widget, Wrap},
 };
 use tui_widgets::big_text::{BigText, PixelSize};
 
@@ -55,18 +55,25 @@ fn render_app_ui(frame: &mut Frame, app: &mut CalcApp) {
         .border_style(Style::new().cyan())
         .render(content, frame.buffer_mut());
 
-    let layout = Layout::vertical([
-        Constraint::Length(4),
-        Constraint::Fill(1),
-        Constraint::Length(1),
-    ])
-    .margin(1);
+    if app.show_help {
+        let layout = Layout::vertical([Constraint::Fill(1)]).margin(2);
+        let [content] = content.layout(&layout);
 
-    let [display, buttons, help] = content.layout(&layout);
+        render_help_popup(frame, content);
+    } else {
+        let layout = Layout::vertical([
+            Constraint::Length(4),
+            Constraint::Fill(1),
+            Constraint::Length(1),
+        ])
+        .margin(1);
 
-    render_display(frame.buffer_mut(), display, app);
-    render_buttons(frame.buffer_mut(), buttons, app);
-    render_help(frame.buffer_mut(), help);
+        let [display, buttons, help] = content.layout(&layout);
+
+        render_display(frame.buffer_mut(), display, app);
+        render_buttons(frame.buffer_mut(), buttons, app);
+        render_help(frame.buffer_mut(), help);
+    }
 }
 
 /// Render display zone
@@ -161,26 +168,33 @@ fn render_app_ui_big(frame: &mut Frame, app: &mut CalcApp) {
         .border_style(Style::new().cyan())
         .render(content, frame.buffer_mut());
 
-    let mut layout: Layout = Layout::vertical([
-        Constraint::Length(7),
-        Constraint::Fill(1),
-        Constraint::Length(1),
-    ])
-    .margin(1);
+    if app.show_help {
+        let layout = Layout::vertical([Constraint::Fill(1)]).margin(2);
+        let [content] = content.layout(&layout);
 
-    if app.altscreen {
-        layout = Layout::vertical([
-            Constraint::Percentage(17),
-            Constraint::Percentage(83),
+        render_help_popup(frame, content);
+    } else {
+        let mut layout: Layout = Layout::vertical([
+            Constraint::Length(7),
+            Constraint::Fill(1),
             Constraint::Length(1),
         ])
         .margin(1);
-    }
-    let [display, buttons, help] = content.layout(&layout);
 
-    render_display_big(frame.buffer_mut(), display, app);
-    render_buttons_big(frame.buffer_mut(), buttons, app);
-    render_help(frame.buffer_mut(), help);
+        if app.altscreen {
+            layout = Layout::vertical([
+                Constraint::Percentage(17),
+                Constraint::Percentage(83),
+                Constraint::Length(1),
+            ])
+            .margin(1);
+        }
+        let [display, buttons, help] = content.layout(&layout);
+
+        render_display_big(frame.buffer_mut(), display, app);
+        render_buttons_big(frame.buffer_mut(), buttons, app);
+        render_help(frame.buffer_mut(), help);
+    }
 }
 
 /// Render display zone
@@ -255,9 +269,33 @@ fn render_buttons_big(buf: &mut Buffer, area: Rect, app: &mut CalcApp) {
 
 /// Render help zone
 fn render_help(buf: &mut Buffer, area: Rect) {
-    Paragraph::new("c - clear input, esc/C - clear all, Q - quit")
+    Paragraph::new("? - help, Q - quit")
         .alignment(Alignment::Right)
         .fg(Color::Rgb(150, 150, 150))
         .wrap(Wrap { trim: true })
         .render(area, buf);
+}
+
+fn render_help_popup(frame: &mut Frame, area: Rect) {
+    let help_text = Text::from(vec![
+        "  y     : Yank result text".into(),
+        "  p     : Paste value (only numeric)".into(),
+        "  c     : Clear input".into(),
+        "  C/esc : Clear all".into(),
+        "  ?     : Toggle help menu".into(),
+        "  Q     : Quit".into(),
+    ]);
+
+    let help_block = Block::bordered()
+        .title(" help ")
+        .title_alignment(Alignment::Center)
+        .border_type(BorderType::Rounded)
+        .padding(Padding::new(1, 1, 0, 0))
+        .border_style(Style::new().yellow());
+
+    let help_paragraph = Paragraph::new(help_text)
+        .block(help_block)
+        .wrap(Wrap { trim: true });
+
+    frame.render_widget(help_paragraph, area);
 }
