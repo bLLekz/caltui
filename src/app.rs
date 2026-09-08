@@ -203,6 +203,7 @@ impl CalcApp {
 
         if is_numeric(&contents) {
             self.text_input = contents;
+            self.input_cursor_position = self.text_input.len().try_into().unwrap();
         }
     }
 
