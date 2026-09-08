@@ -9,6 +9,7 @@ license = "MIT"
 categories = ["command-line-utilities"]
 
 [dependencies]
+arboard = { version = "3.6.1", features = ["wayland-data-control"] }
 color-eyre = "0.6.5"
 crossterm = "0.29.0"
 ratatui = "0.30.0"

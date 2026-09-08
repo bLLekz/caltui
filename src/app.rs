@@ -1,11 +1,15 @@
+use arboard::Clipboard;
 use color_eyre::eyre::{Ok, Result};
 use crossterm::event::{self, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind};
 use ratatui::{DefaultTerminal, layout::Rect};
 
 use crate::{
-    calc::Calc, common::{
-        AppSize, AppState, Operation, UserInput::{self},
-    }, ui::render_ui,
+    calc::Calc,
+    common::{
+        AppSize, AppState, Operation,
+        UserInput::{self},
+    },
+    ui::render_ui,
 };
 
 /// Main app
@@ -59,6 +63,8 @@ impl CalcApp {
                     KeyCode::Char('Q') => self.quit(),
                     KeyCode::Char('C') => self.reset(),
                     KeyCode::Char('c') => self.clear_input(),
+                    KeyCode::Char('y') => self.yank_result(),
+                    KeyCode::Char('p') => self.paste_result(),
                     KeyCode::Char(c) => self.typing_action(c),
                     KeyCode::Backspace => self.backspace_action(),
                     KeyCode::Delete => self.delete_action(),
@@ -181,6 +187,20 @@ impl CalcApp {
             && self.text_input.len() > 0
             && self.input_cursor_position < self.text_input.len().try_into().unwrap()
         {}
+    }
+
+    fn yank_result(&mut self) {
+        let mut clipboard = Clipboard::new().unwrap();
+        clipboard.set_text(self.text_input.clone()).unwrap();
+    }
+
+    fn paste_result(&mut self) {
+        let mut clipboard = Clipboard::new().unwrap();
+        let contents = clipboard.get_text().unwrap();
+
+        if is_numeric(&contents) {
+            self.text_input = contents;
+        }
     }
 
     fn do_calc(&mut self) {
@@ -309,4 +329,9 @@ impl CalcApp {
         self.reset();
         self.state = AppState::Quit;
     }
+}
+
+fn is_numeric(s: &str) -> bool {
+    let trimmed = s.trim();
+    !trimmed.contains(['e', 'E']) && trimmed.parse::<f64>().is_ok()
 }

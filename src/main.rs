@@ -45,10 +45,10 @@ fn main() -> Result<()> {
     let result = app.run(&mut terminal);
 
     // Cleanup
-    terminal.clear()?; 
     disable_raw_mode()?;
     crossterm::execute!(terminal.backend_mut(), DisableMouseCapture)?;
     ratatui::restore();
+    terminal.clear()?; 
 
     result
 }
